@@ -1,0 +1,335 @@
+@base <http://example.org/> .
+@prefix ex: <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#### Defining the pipeline
+<myPipeline> a ex:Pipeline;
+               ex:consistsOf <myLdesClient>,
+                          <myHTTPForwarder>,
+                          <myGeoFilter>,
+                          <myTripleStore>,
+                          <myLookupService>.
+
+
+#### Instantiating the pipeline components
+<myLdesClient> a <LdesClient>; 
+                  ex:parameterValue [ex:specifies "url"; 
+                                     ex:value "https://ca-westtoerwin-nginx-prod.livelyisland-1fa58ea1.westeurope.azurecontainerapps.io/touristattractions/latestView"], 
+                                    [ex:specifies "endpoint"; 
+                                     ex:value "http://host.docker.internal:3333"].
+<myHTTPForwarder> a <HTTPForwarder>; 
+                  ex:parameterValue [ex:specifies "inbound-port"; 
+                                     ex:value 3333], 
+                                    [ex:specifies "outbound-port"; 
+                                     ex:value 3334].
+<myTripleStore> a <TripleStore>;
+                  ex:parameterValue [ex:specifies "environment"; 
+                                     ex:value "SPARQL_UPDATE: 'true'"], 
+                                    [ex:specifies "volumes"; 
+                                     ex:value "./config/virtuoso/virtuoso.ini:/data/virtuoso.ini"].
+
+<myLookupService> a <LookupService>.
+
+
+#### Defining the pipeline component classes 
+<LdesClient> a  owl:Class;
+             ex:framework ex:LDIO;
+             ex:parameter [ex:name "url"; 
+                           ex:description "url of the LDES to be fetched.";
+                           ex:minCount 1; 
+                           ex:maxCount 1; 
+                           ex:datatype "text"], 
+                          [ex:name "endpoint"; 
+                           ex:description "where to send the data to.";
+                           ex:minCount 1; 
+                           ex:maxCount 1; 
+                           ex:datatype "url"], 
+                          [ex:name "content-type"; 
+                           ex:description "the preferred output content type.";
+                           ex:minCount 0; 
+                           ex:maxCount 1; 
+                           ex:datatype "text";
+                           ex:default "text/turtle"];
+             ex:codebase [ ex:documentation "https://informatievlaanderen.github.io/VSDS-Tech-Docs/consumer/inputs/ldes-client";
+                ex:repository "https://github.com/Informatievlaanderen/VSDS-Onboarding-Example/tree/main"];
+             ex:dependency [ex:program ex:docker],
+                           [ex:program ex:ldi-orchestrator; 
+                            ex:version "^2.12.0"].
+
+<HTTPForwarder> a  owl:Class;
+             ex:framework ex:RDFConnect;
+             ex:parameter [ex:name "inbound-port"; 
+                           ex:minCount 1; 
+                           ex:maxCount 1; 
+                           ex:datatype "integer"], 
+                          [ex:name "outbound-port"; 
+                           ex:minCount 1; 
+                           ex:maxCount 1; 
+                           ex:datatype "integer"];
+              ex:codebase []; 
+              ex:dependency  [ex:program "@rdfc/orchestrator-js"; 
+                               ex:version "^1.0.5"], 
+                             [ex:program "@rdfc/js-runner"; 
+                               ex:version "^2.0.0"], 
+                             [ex:program "gradle"; 
+                               ex:version "^1.0.8"];
+             ex:assumption ex:HTTPForwarderShape.
+
+
+<TripleStore> a owl:Class;
+             ex:framework ex:SemanticWorks;
+             ex:parameter ex:DockerServiceShape;
+             ex:codebase [ ex:repository "https://github.com/mu-semtech/mu-project"];
+             ex:dependency [ex:program ex:docker],
+                           [ex:program "redpencil/virtuoso"; 
+                            ex:version "^1.2.1"].
+
+
+<LookupService> a owl:Class;
+              ex:framework ex:SemanticWorks;
+              ex:parameter ex:DockerServiceShape;
+              ex:assumption <SemanticWorksShape>.
+
+
+#### Defining the relationships between instanced components
+<fromLdesClientToHttpForwarder> a ex:Relationship; 
+                                ex:links <myLdesClient>, <myHTTPForwarder>;
+                                ex:direction ex:rightArrow;
+                                ex:operation [a ex:Channel; ex:protocol "http"].
+
+
+
+
+#### DockerService Config template
+
+ex:DockerServiceShape
+    a sh:NodeShape ;
+    sh:targetClass ex:DockerService ;
+    sh:message "A docker-compose service must follow the defined template shape." ;
+
+    # image: required single string
+    sh:property [
+        sh:path ex:image ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:description "Docker image reference, e.g. 'nginx:latest'." ;
+    ] ;
+
+    # build: optional, can be a string path or an object (we accept string here)
+    sh:property [
+        sh:path ex:build ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+        sh:description "Build context or object; represented as a string path in this template." ;
+    ] ;
+
+    # command, entrypoint: optional strings
+    sh:property [
+        sh:path ex:command ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path ex:entrypoint ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+    ] ;
+
+    # ports: zero or more. Accept either integer container-port or mapping "HOST:CONTAINER"
+    sh:property [
+        sh:path ex:ports ;
+        sh:nodeKind sh:Literal ;
+        sh:pattern "^(\\d+|\\d+:\\d+)$" ;          # integer OR "HOST:CONTAINER" (basic)
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+
+    # Alternative (structured) port mapping: allow ex:portsMapping nodes with inbound/outbound
+    sh:property [
+        sh:path ex:portsMapping ;
+        sh:node [
+            a sh:NodeShape ;
+            sh:property [
+                sh:path ex:portsMapping ;    # reuse, but inside node we expect inbound/outbound props
+                sh:description "Structured mapping nodes are optional; please use ex:inboundPort/ex:outboundPort if used." ;
+            ] ;
+        ] ;
+        sh:minCount 0 ;
+    ] ;
+
+    # environment: zero or more key=value literals (simple representation)
+    sh:property [
+        sh:path ex:environment ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+
+    # env_file: optional string or list-of-strings (accept simple string)
+    sh:property [
+        sh:path ex:envFile ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+
+    # volumes: zero or more strings
+    sh:property [
+        sh:path ex:volumes ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+
+    # depends_on: zero or more service names (strings)
+    sh:property [
+        sh:path ex:dependsOn ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+
+    # restart policy: optional; limit to common keywords
+    sh:property [
+        sh:path ex:restart ;
+        sh:in ( "no" "on-failure" "always" "unless-stopped" ) ;
+        sh:minCount 0 ;
+        sh:maxCount 1 ;
+    ] ;
+
+    # networks, labels, logging, secrets, configs: optional free-form (string or node)
+    sh:property [
+        sh:path ex:networks ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+    sh:property [
+        sh:path ex:labels ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+    sh:property [
+        sh:path ex:logging ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+    sh:property [
+        sh:path ex:secrets ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] ;
+    sh:property [
+        sh:path ex:configs ;
+        sh:nodeKind sh:Literal ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+    ] .
+
+
+
+
+#### Assumptions
+ex:HTTPForwarderShape
+    a sh:NodeShape ;
+    sh:targetClass <HTTPForwarder> ;
+    sh:message "Constraints for an HTTPForwarder instance." ;
+    sh:property [
+        sh:path ex:links ;                  # incoming relationships that link to this forwarder
+        sh:qualifiedValueShape [
+            a sh:NodeShape ;
+            sh:property [
+                sh:path ex:direction ;
+                sh:hasValue ex:rightArrow ;
+            ] ;
+            # operation must exist and follow the channel shape below
+            sh:property [
+                sh:path ex:operation ;
+                sh:node [
+                    a sh:NodeShape ;
+                    sh:property [
+                        sh:path ex:protocol ;
+                        sh:hasValue "http" ;
+                    ] ;
+                ] ;
+            ] ;
+        ] ;
+        sh:qualifiedMinCount 1 ;
+    ] ;
+    sh:property [
+        sh:path ex:links ;
+        sh:qualifiedValueShape [
+            a sh:NodeShape ;
+            sh:property [
+                sh:path ex:direction ;
+                sh:hasValue ex:leftArrow ;
+            ] ;
+            sh:property [
+                sh:path ex:operation ;
+                sh:node [
+                    a sh:NodeShape ;
+                    sh:property [
+                        sh:path ex:protocol ;
+                        sh:hasValue "http" ;
+                    ] ;
+                ] ;
+            ] ;
+        ] ;
+        sh:qualifiedMinCount 1 ;
+    ] .
+
+    
+<SemanticWorksShape>
+  a sh:NodeShape ;
+  sh:message "A SemanticWorks component (except TripleStore itself) must be linked to an instantiated TripleStore via an ex:Relationship." ;
+  #
+  # We use a SPARQL constraint because:
+  #  - your model records the framework on the *class* node (e.g. <LookupService> ex:framework ex:SemanticWorks),
+  #  - instances have rdf:type pointing at those classes, so we need to traverse instance->class->framework.
+  #
+  sh:constraint [
+    a sh:SPARQLConstraint ;
+    sh:message "This component is not connected by an ex:Relationship to any instance of ex:TripleStore." ;
+    sh:select """
+      SELECT $this WHERE {
+        # $this is the node being validated
+
+        # 1) Exclude triple-store instances themselves (they are not required to have this link)
+        FILTER NOT EXISTS { $this a ex:TripleStore . }
+
+        # 2) Ensure $this is an instance of some class that declares the SemanticWorks framework.
+        #    (i.e. $this rdf:type ?clazz . ?clazz ex:framework ex:SemanticWorks .)
+        #    If not, this shape simply does not apply — we therefore fail rows where this holds AND the link is missing.
+        {
+          $this rdf:type ?clazz .
+          ?clazz ex:framework ex:SemanticWorks .
+        } UNION {
+          # also allow the case where the instance itself carries ex:framework directly
+          # (defensive: in case a component instance has ex:framework directly)
+          $this ex:framework ex:SemanticWorks .
+        }
+
+        # 3) Check for existence of a Relationship that links the component to a TripleStore instance.
+        #    The Relationship node lists linked endpoints with ex:links.
+        FILTER NOT EXISTS {
+          ?rel a ex:Relationship ;
+               ex:links $this ;
+               ex:links ?ts .
+          ?ts a ex:TripleStore .
+        }
+      }
+    """ ;
+  ] .
+
+
+

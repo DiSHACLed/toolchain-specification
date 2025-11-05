@@ -1,0 +1,119 @@
+@prefix shsh: <http://www.w3.org/ns/shacl-shacl#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ex: <http://example.org/>.
+@prefix rdfc: <https://w3id.org/rdf-connect#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+
+<GeoFilter> a owl:Class;
+  ex:framework rdfc:;
+  ex:parameter ex:inputStreamParameter,
+    ex:outputStreamParameter,
+    ex:geoFilterParameter,
+    ex:geoPredicateParameter;
+  ex:codebase [
+    a ex:NpmCodeBase;
+    ex:name "@rdfc/geofilter-js";
+  ];
+  ex:dependency [
+    a ex:NpmDependency;
+    ex:name "@rdfc/orchestrator-js";
+    ex:version "3.0.0";
+  ], [
+    a ex:NpmDependency;
+    ex:name "@rdfc/js-runner";
+    ex:version "2.0.1";
+  ].
+
+ex:geoFilterParameter a ex:Parameter;
+  ex:name "geoFilter";
+  ex:description "WKT string to filter on.";
+  ex:minCount 1;
+  ex:maxCount 1;
+  ex:datatype xsd:string.
+
+ex:geoPredicateParameter a ex:Parameter;
+  ex:name "geoPredicate";
+  ex:description "Predicate to follow to find the geo string to filter on.";
+  ex:minCount 1;
+  ex:maxCount 1;
+  # I Don't think this exists
+  ex:class sh:PropertyPath.
+
+ex:inputStreamParameter a ex:Parameter;
+  ex:name "input";
+  ex:minCount 1;
+  ex:maxCount 1.
+
+ex:outputStreamParameter a ex:Parameter;
+  ex:name "output";
+  ex:minCount 1;
+  ex:maxCount 1.
+
+<GeoFilterShape> a sh:NodeShape;
+  sh:targetClass <GeoFilter>;
+  sh:parameter [
+    sh:name "input";
+    sh:or ( [
+      sh:path ex:input;
+      sh:class rdfc:Reader;
+    ] [
+      sh:path [ sh:inversePath ex:links ];
+      sh:node <HTTPLink>;
+    ] );
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:name "output";
+    sh:or ( [
+      sh:path ex:output;
+      sh:class rdfc:Writer;
+    ] [
+      sh:path [ sh:inversePath ex:links ];
+      sh:node <incomingLink>;
+    ] );
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:name "geoFilter";
+    sh:path ex:geoFilter;
+    sh:datatype xsd:string;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ], [
+    sh:name "geoPredicate";
+    sh:path ex:geoPredicate;
+    sh:node shsh:PathShape;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ].
+
+<incomingLink> a sh:NodeShape;
+  sh:property [
+    sh:path ex:operation;
+    sh:node <HTTPLink>;
+  ], [
+    sh:property ex:direction;
+    sh:hasValue ex:inputStreamParameter;
+  ].
+
+<HTTPLink> a sh:NodeShape;
+  sh:property [
+    sh:path ( ex:operation ex:protocol );
+    sh:hasValue "http";
+  ].
+
+<myGeoFilter> a <GeoFilter>;
+  ex:goFilter "";
+  ex:geoPredicate ex:location.
+
+# it is still unclear how we should model that this relationship relates to ex:inputStreamParameter
+<fromLdesClientToHttpForwarder> a ex:Relationship;
+  ex:links <myLdesClient>, <myGeoFilter>;
+  # This is an idea but is still incorrect as LDESClient doesn't have a ex:inputStreamParameter
+  ex:direction ex:inputStreamParameter;
+  ex:operation [
+    a ex:Channel;
+    ex:protocol "http";
+  ].
+

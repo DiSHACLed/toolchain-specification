@@ -27,11 +27,15 @@ Implementers are instanced to run a particular pipeline. The required implemente
 ### PipelineComponent
 This is a superclass of Implementers and Processors, i.e. any modular and reusable piece of software needed to run a pipeline. PipelineComponents have a ConfigSchema, which defines the parameters the PipelineComponent accepts. It also links to resources needed to implement a pipeline, such as the Dockerfile, Documentation and Constraints.
 
-### ConfigSchema
-PipelineComponents permit a set of configuration values, hence a ConfigSchema is essentially a schema of the configuration values that a PipelineComponent can accept. ConfigSchema conceptually differs from DataSchema in that configuration values are typically not transformed while running the pipeline (in contrast to data) but rather define the transformation behavior itself. 
-
 ### Config 
-When a PipelineComponent is instanced, it is expected that its Config corresponds to the ConfigSchema that the PipelineComponent permits. The difference between Config and ConfigSchema is hence that ConfigSchema is a schema and a Config is a set of concrete values used while running the pipeline. 
+A Config is a data structure equivalent to the "object" type in JSON, consisting of an unordered set of name/value pairs (referred to as fields) and where the name is a string and the value is a string, number, boolean, array, or object (same concept as in the [Common Workflow Language](https://www.commonwl.org/v1.2/Workflow.html#Data_concepts)). A Config can be serialized in different formats (json, yaml, or even rdf if the graph structure is tree-like, thus not cyclic). 
+
+If a Config is "embedded" as part of the rdf graph, field-names serve as predicates and field-values as objects. If a Config is not serialized as rdf, it cannot be directly embedded in the rdf graph. In that case the Config is a literal string, meaning that its fields are not parsed. If the Config is a literal string, it can be a Literal as part of the rdf graph or a url (or filepath) that has to dereference to a text-file. A Config should also declare the serialization format it uses (json, yaml), although this may also be inferred.
+
+When a PipelineComponent is instanced, it is expected that its Config corresponds to the ConfigSchema that the PipelineComponent permits. The difference between Config and ConfigSchema is hence that ConfigSchema is a schema and a Config is a set of concrete values used while running the pipeline. A Config conceptually differs from Data in that a Config is typically not transformed while running the pipeline (in contrast to Data) but rather defines the transformation behavior itself (same goes for ConfigSchema in contrast to DataSchema). 
+
+### ConfigSchema
+The ConfigSchema describes the valid format (required fields, data types) for a Config. Since a Config can be serialized in different formats, different formats can also be used for the ConfigSchema, such as SHACL or [JSON-schema](https://json-schema-everywhere.github.io/yaml). In the case of the letter, the ConfigSchema can again not be embedded in the rdf graph and hence must be expressed as a Literal. In this case it should also be declared what serialization format the ConfigSchema uses. A ConfigSchema must also declare the expected compiled format of the Config, i.e. the format in which the Config has to be serialized at runtime.
 
 ### Dockerfile
 To allow building a pipeline based on the RDF graph describing the pipeline alone, it is necessary to describe how the PipelineComponent can be build from scratch. This is the purpose of the Dockerfile entity. It is a concrete installation instruction in the form of a dockerfile. 
@@ -54,7 +58,6 @@ Probably one wants to describe a Project that used / generated Data through a Pi
 
 
 # Future Directions 
-- ConfigSchema: We discussed that configurations can become very complex and that it is hence likely not feasible nor desirable to define all configuration schema’s exhaustively with this entity. It seems a more feasible approach to sometimes only specify that a parameter expects a config-file of a specific type, for example yaml or json. We should look at the common workflow language (cwl) which is very mature in describing configurations. 
 - In this model, pipelines are only described as concrete instances, not as reusable templates. In my view, a pipeline automatically becomes reusable by simply changing the used data and potentially some configuration values. But some people may see that differently and may want distinction of class and instance for pipelines. 
 - Once we are happy with our generic semantic model, we should check which entities we can map onto already existing ontologies. The more we can reuse the better!
 - It remains to be tested whether describing a pipeline in such a way really provides enough information to (semi-) automatically compile a corresponding pipeline. 

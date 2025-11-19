@@ -43,9 +43,12 @@ To allow building a pipeline based on the RDF graph describing the pipeline alon
 ### Documentation 
 This is self-explanatory, it should link to the documentation of the PipelineComponent.
 
-
 ### Constraint
 Modular pieces of software, i.e. PipelineComponents come with Constraints to execute properly in a pipeline. For example, the Implementer "Linked Data Interactions Orchestrator" has the important constraint that each instance of a Processor that it runs can only be linked to each other via DataFlows in a strictly sequential order (because LDIO does not allow branching within its framework). As another example, instantiating a “HTTP Forwarder” Processor to a Pipeline could entail validating its Constraint that it is linked to two other Processors via HTTP, hence effectively forwarding data via HTTP. In short, Constraint is an important entity which can be used to describe logical constraints that PipelineComponents introduce when being instantiated in a pipeline.
+
+Constraints can also be used to declare which "custom" properties an Implementer expects of the PipelineComponents it runs. For example, in LDIO each Processor is of type "Input", "Adapter", "Transformer" or "Output". The type of a Processor has to be known to both compile the Config for the Linked Data Interactions Orchestrator and also for validation (for example, an "Output" cannot come before an "Input"). A Constraint for the Linked Data Interactions Orchestrator can hence declare that it cannot run unless each Processor it runs has a known LDIO-type. 
+
+Each constraint is expressed as a SHACL-shape to allow automatic validation. Each Constraint should have a constraint-label and constraint-description for human readibility. These should clearly indicate and describe what kind of constraint is imposed, to allow easier implementation of the logic behind the constraint. 
 
 ### Prov-O:Activity
 Allows to track the provenance of pipeline runs, see https://www.w3.org/TR/prov-o/#Activity. A Prov-O:Activity could also wasInformedBy a ProcessorInstance, in which case provencance can be tracked more granularly. 
@@ -63,5 +66,3 @@ Probably one wants to describe a Project that used / generated Data through a Pi
 - It remains to be tested whether describing a pipeline in such a way really provides enough information to (semi-) automatically compile a corresponding pipeline. 
 - We may want to be able to express the state of a pipeline run while it is still ongoing. This remains to be discussed, because in the current scope the rdf graph is only used to compile a pipeline build, but not used to monitor the pipeline progress. 
 - We may not always want to build each PipelineComponent, some PipelineComponents may already be running. We have to think more about how to express this and how this would work in practice. 
-
-

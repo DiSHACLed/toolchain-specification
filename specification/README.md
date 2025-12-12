@@ -1,7 +1,7 @@
 
 # Table Of Contents
 
-- [1. Overview](#overview)
+- [1. Overview](#1-overview)
     - [1.1. Introduction](#11-introduction)
     - [1.2 Term definitions](#12-term-definitions)
 
@@ -12,7 +12,7 @@
     - [2.4. Additional Classes](#24-additional-classes)
     - [2.5. Future Directions](#25-future-directions)
 
-- [3. Pipeline Generator Specification](#pipeline-generator-specification)
+- [3. Pipeline Generator Specification](#3-pipeline-generator-specification)
     - [3.1. High-level overview](#31-high-level-overview)
     - [3.2. Additional Details](#32-additional-details)
     - [3.3. Frontend](#33-frontend)
@@ -71,6 +71,8 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 <br>
 
 ### Pipeline Generator
+![Pipeline Generator](diagrams/pipeline_generator.svg)
+
 | | |
 |----------|----------|
 | **Definition** | A Pipeline Generator is a reasoning service that takes a Pipeline Definition and one or more Component Catalogues as input and produces a Pipeline Build as output. In other words, a Pipeline Generator suggests a system capable of executing a Pipeline Definition based on the Components it has at its disposal as resources. It considers osw:UsesAndAssumptions of each PipelineComponent to evaluate the feasibility of suggesting a Pipeline Build. As such it should be sufficient for a user to define a Pipeline Definition to arrive at a Pipeline Build capable of running the pipeline. A Pipeline Generator could hence automate the task of building a pipeline, making it sufficient for the user to formulate the intended pipeline. |
@@ -78,6 +80,8 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 <br>
 
 ### Pipeline Definition
+![Pipeline Definition](diagrams/pipeline_definition.svg)
+
 | | |
 |----------|----------|
 | **Definition** | In its essence, a Pipeline Definition is a directed graph of planned PipelineSteps, each aimed to generate or transform data. For this purpose, each Pipeline Step points at a Processor, which is a Pipeline Component appointed to carry out the Pipeline Step. A Pipeline Step also receives a Config in order to define the expected behavior of the Processor during the Pipeline Step. A Pipeline Step can correspond to a Pipeline Definition, making nesting possible. <br><br> A Pipeline Definition declares intent; it is a plan of a pipeline to be run. |
@@ -85,6 +89,8 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 <br>
 
 ### Component Catalogue
+![Component Catalogue](diagrams/component_catalogue.svg)
+
 | | |
 |----------|----------|
 | **Definition** | A Component Catalogue is a collection of the PipelineComponents that can be instanced in order to create an Pipeline Build capable of executing a Pipeline Definition. Machine-readable installation instructions (thus steps needed for instancing the component) can be expressed as Dockerfiles. Dependencies between PipelineComponents can be expressed to ensure that instancing a PipelineComponent includes instancing the supporting Runners in the respective Environments. 
@@ -92,6 +98,8 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 <br>
 
 ### Pipeline Build
+![Pipeline Build](diagrams/pipeline_build.svg)
+
 | | |
 |----------|----------|
 | **Definition** | An Pipeline Build is the description of a system capable of executing the Pipeline Definition. It has to be sufficiently described to allow reproducibility (in contrast to the Pipeline Definition, whose main concern is declaring intent). As such, the Pipeline Build consists of a collection of ProcessorInstances, which are responsible for executing PipelineSteps. A pipeline does not run in a vacuum, hence it is also needs to be defined in which Environment these PipelineComponents are instanced. These Environments are also described as Dockerfiles. Furthermore, data transfer between ProcessorInstances is defined via Channels. This allows adding fields related to this data transfer. Runners may be instanced as well. These are PipelineComponents that Processors depend on, however they are not responsible for transforming or generating data themselves. |
@@ -102,6 +110,8 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 
 ## 2.4. Additional Classes
 <br>
+
+![Toolchain Model](diagrams/toolchain_model.svg)
 
 ### PipelineStep
 | | |
@@ -339,5 +349,6 @@ As of now, the Pipeline Generator will only generate the files needed to run a p
 Since the frontend is already used to visualize the pipeline, it may also be used to visualize the monitoring of the pipeline once it runs. For this purpose, it is needed to fetch information from the Docker API: It will provide information basic monitoring information, like container health, logs (stdout/stderr), resource usage. This can indicate whether all Environments and initiated correctly. Fetching stdout and stderr in this way is convenient because it automatically fetches all logs that each Pipeline Component produces, no matter the framework it runs on. 
 
 Ideally we would also want some information on the data throughput. This could be done by having the "glue"-Processors, i.e. the bridges that are interjected between docker containers to provide cross-container communication, provide an API for this. At the very least, it would allow capturing whether data goes in and out of each container, and hence whether the pipeline is running. 
+
 
 

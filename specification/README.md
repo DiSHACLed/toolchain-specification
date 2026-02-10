@@ -23,7 +23,7 @@
 ## 1.1 Introduction
 *Intention*: discoverability, replication, modular design, separation of concerns, ease of use 
 <br><br>
-The goal is to design a framework-agnostic, streaming-oriented pipeline orchestration system for Linked Data. Pipelines are described semantically using RDF, and execution is realized across multiple frameworks (currently LDIO, RDFConnect, semantic.works) using Docker containers and RDFConnect for orchestration. For this purpose, the *toolchain* ontology is developed.
+The goal is to design a framework-agnostic, streaming-oriented pipeline orchestration system for Linked Data. Pipelines are described semantically using RDF, and execution is realized across multiple frameworks (currently LDIO, RDF Connect, semantic.works) using Docker containers and RDF Connect for orchestration. For this purpose, the *toolchain* ontology is developed.
 
 The *toolchain* ontology allows to describe data pipelines for the purpose of replicability. Four Core Classes are established, each of which are concerned with different responsibilities. Providing a minimal **Pipeline Definition** is sufficient to allow replication of a pipeline. Pipelines are defined as a series of data transformation steps, which are executed by Pipeline Components. These Pipeline Components are collected in a **Component Catalogue**, which hence provides the resources for building a pipeline. A Pipeline Generator takes a Pipeline Definition and attempts to build an executable pipeline based on the resources at its disposal in the Component Catalogue. The **Pipeline Build** reflects  the compiled pipeline and provides all information concerning instantiation of a pipeline in a specific Environment.
 <br><br>
@@ -50,7 +50,7 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 | tc  | toolchain  | the document you are currently reading |
 | rdf  | http://www.w3.org/1999/02/22-rdf-syntax-ns#  | https://www.w3.org/TR/rdf11-concepts/ |
 | rdfs | http://www.w3.org/2000/01/rdf-schema#  | https://www.w3.org/TR/rdf-schema/ |
-| rdfc | https://rdf-connect.github.io/ontology/ | https://rdf-connect.github.io/specification/ |
+| rdfc | https://w3id.org/rdf-connect# | https://rdf-connect.github.io/specification/ |
 | p-plan  | http://purl.org/net/p-plan# | https://vocab.linkeddata.es/p-plan/index.html |
 | prov  | http://www.w3.org/ns/prov# | https://www.w3.org/TR/prov-o/ |
 | osw  | http://ontosoft.org/software#  | https://ontosoft-earthcube.github.io/ontosoft/ontosoft%20ontology/v1.0.1/doc/index.html |
@@ -64,7 +64,7 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 - For the *Pipeline Definition* the p-plan ontology is used. This is because the *Pipeline Definition* reflects a plan of a pipeline to be built and executed.
 - For the *Component Catalogue* the osw-ontology is used, which allows extensive metadata annotation of software, and hence provides sufficient terms for defining PipelineComponents exhaustively. 
 - For the *Pipeline Build* a mix of prov and sosa is used. Prov is used for describing the Pipeline Build as a prov:SoftwareAgent, which allows to define Pipeline Runs as Activities of the Pipeline Build. Sosa is used for describing the Pipeline Build as a sosa:System, which allows describing how this system may be hosted in different Environments (sosa:Platforms). 
-- A link with dcat is made twice: A Pipeline Run is a prov:Activity that used and generated dcat:datasets, allowing to link datasets to the pipelines that generated them. A *Component Catalogue* is also a dcat:dataset by itself, providing a means for publishing and sharing Pipeline Components with a wider audience. 
+- A link with dcat is made twice: A Pipeline Run is a prov:Activity that used and generated dcat:Datasets, allowing to link datasets to the pipelines that generated them. A *Component Catalogue* is also a dcat:Dataset by itself, providing a means for publishing and sharing Pipeline Components with a wider audience. 
 <br><br>
 
 ## 2.3. Core Classes
@@ -94,7 +94,7 @@ Even if the Pipeline Generator is not utilized, the *toolchain* ontology provide
 | | |
 |----------|----------|
 | **Definition** | A Component Catalogue is a collection of the PipelineComponents that can be instanced in order to create an Pipeline Build capable of executing a Pipeline Definition. Machine-readable installation instructions (thus steps needed for instancing the component) can be expressed as Dockerfiles. Dependencies between PipelineComponents can be expressed to ensure that instancing a PipelineComponent includes instancing the supporting Runners in the respective Environments. 
-| **subclass of** |prov:Collection, dcat:dataset |
+| **subclass of** |prov:Collection, dcat:Dataset |
 <br>
 
 ### Pipeline Build
@@ -350,6 +350,7 @@ As of now, the Pipeline Generator will only generate the files needed to run a p
 Since the frontend is already used to visualize the pipeline, it may also be used to visualize the monitoring of the pipeline once it runs. For this purpose, it is needed to fetch information from the Docker API: It will provide basic monitoring information, like container health, logs (stdout/stderr) and resource usage. This can indicate whether all Environments are initiated correctly. Fetching stdout and stderr in this way is convenient because it automatically fetches all logs that each Pipeline Component produces, no matter the framework it runs on. 
 
 Ideally we would also want some information on the data throughput. This could be done by having the "glue"-Processors, i.e. the bridges that are interjected between docker containers to provide cross-container communication, provide an API for this. At the very least, it would allow capturing whether data goes in and out of each container, and hence whether the pipeline is running. 
+
 
 
 

@@ -1,0 +1,1089 @@
+#################################################################
+# GENERATED FILE - DO NOT EDIT
+#
+# Produced by `python -m rdfc_catalog_harvest generate` from:
+#   - data/catalog-rdfc-requests.ttl   (hand-written: which package)
+#   - data/rdfc_harvest/               (frozen upstream definitions)
+#
+# To change a version or add a component, edit the request file and
+# re-run:
+#     python -m rdfc_catalog_harvest harvest
+#     python -m rdfc_catalog_harvest generate
+# To change the orchestrator, the runners, or a component whose source
+# is not resolvable, edit data/catalog-rdfc-manual.ttl instead.
+#
+# Every triple below is derived. The only hand-authored values that
+# survive into this file are spdx:versionInfo and spdx:downloadLocation,
+# which are policy, not facts about the package.
+#################################################################
+
+#################################################################
+# Prefixes
+#################################################################
+
+@prefix : <http://example.org/example/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix p-plan: <http://purl.org/net/p-plan#> .
+@prefix proc: <http://dishacled.example.org/processors#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://w3id.org/rdf-connect#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix spdx: <http://spdx.org/rdf/terms#> .
+@prefix tcs: <https://w3id.org/toolchain#> .
+@prefix tm: <https://w3id.org/rdf-connect/threshold-monitor#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#################################################################
+# RDF-Connect components
+#
+# One block per tcs:CatalogRequest. The comment above each block
+# records which package and file it was derived from.
+#################################################################
+
+# rdfc:HttpFetch
+#   source:  npm @rdfc/http-utils-processor-ts@1.2.0-alpha.1
+#   defined: processors.ttl
+rdfc:HttpFetch
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "HTTP Fetch processor" ;
+    rdfs:description "This processor fetches a URL and writes the response to the output channel. It supports various options such as HTTP method, headers, authentication, and scheduling with cron expressions." ;
+    dcat:landingPage "https://github.com/rdf-connect/http-utils-processor-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/http-utils-processor-ts" ;
+        spdx:versionInfo "^1.2.0-alpha.1" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/http-utils-processor-ts/processors.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :HttpFetchShape
+    ] .
+
+
+# rdfc:HttpOut
+#   source:  path
+#   defined: rdfc_http_out/processor.ttl
+rdfc:HttpOut
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "Http Out Processor" ;
+    rdfs:description "Processor to forward data to a http endpoint via POST." ;
+    dct:requires rdfc:PyRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "rdfc_http_out" ;
+        spdx:downloadLocation "file:///workspace/pipeline/local_processors/rdfc_http_out" ;
+        spdx:suppliedBy :pip
+    ] ;
+    owl:imports <../../../usr/local/lib/python3.13/site-packages/rdfc_http_out/processor.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :HttpOutShape
+    ] .
+
+
+# rdfc:HttpServer
+#   source:  npm @rdfc/http-utils-processor-ts@1.2.0-alpha.1
+#   defined: server.ttl
+rdfc:HttpServer
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "HTTP Server processor" ;
+    rdfs:description "This processor starts an HTTP server and writes the body of every incoming request to the output channel. It supports configuring the bind address, accepted HTTP method, path, and the status code returned to clients." ;
+    dcat:landingPage "https://github.com/rdf-connect/http-utils-processor-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/http-utils-processor-ts" ;
+        spdx:versionInfo "^1.2.0-alpha.1" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/http-utils-processor-ts/server.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :HttpServerShape
+    ] .
+
+
+# rdfc:LogProcessorJs
+#   source:  npm @rdfc/log-processor-ts@2.0.3
+#   defined: processor.ttl
+rdfc:LogProcessorJs
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "JS/TS Log Processor" ;
+    rdfs:description "A simple JS/TS processor to log an incoming stream to the RDF-Connect logging system." ;
+    dcat:landingPage "https://github.com/rdf-connect/log-processor-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/log-processor-ts" ;
+        spdx:versionInfo "^2.0.3" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/log-processor-ts/processor.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :LogProcessorJsShape
+    ] .
+
+
+# rdfc:LogProcessorPy
+#   source:  pypi rdfc_log-processor@1.0.0
+#   defined: rdfc_log_processor/processor.ttl
+rdfc:LogProcessorPy
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "Python Log Processor" ;
+    rdfs:description "A simple Python processor to log an incoming stream to the RDF-Connect logging system." ;
+    dcat:landingPage "https://rdf-connect.github.io" ;
+    dct:requires rdfc:PyRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "rdfc_log-processor" ;
+        spdx:versionInfo ">=1.0.0" ;
+        spdx:suppliedBy :pip
+    ] ;
+    owl:imports <../../../usr/local/lib/python3.13/site-packages/rdfc_log_processor/processor.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :LogProcessorPyShape
+    ] .
+
+
+# rdfc:SPARQLIngest
+#   source:  npm @rdfc/sparql-ingest-processor-ts@2.1.7
+#   defined: processors.ttl
+rdfc:SPARQLIngest
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "SPARQL Ingest Processor" ;
+    rdfs:description "A processor that ingests RDF data into a SPARQL endpoint" ;
+    dcat:landingPage "https://github.com/rdf-connect/sparql-ingest-processor-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/sparql-ingest-processor-ts" ;
+        spdx:versionInfo "^2.1.7" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/sparql-ingest-processor-ts/processors.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :SPARQLIngestShape
+    ] .
+
+
+# rdfc:Sdsify
+#   source:  npm @rdfc/sds-processors-ts@3.0.1
+#   defined: configs/sdsify.ttl
+rdfc:Sdsify
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "Sdsify processor" ;
+    rdfs:description "Ingest a stream of RDF dumps and produce a stream of SDS records, based on the provided configuration." ;
+    dcat:landingPage "https://github.com/rdf-connect/sds-processors-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/sds-processors-ts" ;
+        spdx:versionInfo "^3.0.1" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/sds-processors-ts/configs/sdsify.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :SdsifyShape
+    ] .
+
+
+# rdfc:SkolemizationProcessor
+#   source:  npm @rdfc/skolemization-processor-ts@1.0.0
+#   defined: processor.ttl
+rdfc:SkolemizationProcessor
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "Skolemization Processor" ;
+    rdfs:description "A processor that converts a RDF data to a skolemized form (removing blank nodes)." ;
+    dcat:landingPage "https://github.com/rdf-connect/skolemization-processor-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/skolemization-processor-ts" ;
+        spdx:versionInfo "^1.0.0" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/skolemization-processor-ts/processor.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :SkolemizationProcessorShape
+    ] .
+
+
+# tm:ThresholdMonitorJs
+#   source:  npm @rdfc/threshold-monitor-processor-ts@0.0.1-alpha.2
+#   defined: processor.ttl
+tm:ThresholdMonitorJs
+    a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "JS/TS Threshold Monitor Processor" ;
+    rdfs:description "Reads a stream of SDS members, extracts a value at a configured SHACL path, and writes a tm:ThresholdViolation alert whenever that value falls outside the configured min/max bounds." ;
+    dcat:landingPage "https://github.com/rdf-connect/threshold-monitor-processor-ts" ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/threshold-monitor-processor-ts" ;
+        spdx:versionInfo "^0.0.1-alpha.2" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/threshold-monitor-processor-ts/processor.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :ThresholdMonitorJsShape
+    ] .
+
+#################################################################
+# Catalog membership
+#
+# Emitted here rather than in catalog-core.ttl so the
+# dcat:resource list cannot drift from the component
+# definitions. RDF is additive: the other framework files
+# contribute their own entries to the same catalog node.
+#################################################################
+
+:DishacledCatalog
+    a tcs:Catalog, dcat:Catalog ;
+    dcat:resource rdfc:HttpFetch ;
+    dcat:resource rdfc:HttpOut ;
+    dcat:resource rdfc:HttpServer ;
+    dcat:resource rdfc:LogProcessorJs ;
+    dcat:resource rdfc:LogProcessorPy ;
+    dcat:resource rdfc:SPARQLIngest ;
+    dcat:resource rdfc:Sdsify ;
+    dcat:resource rdfc:SkolemizationProcessor ;
+    dcat:resource tm:ThresholdMonitorJs .
+
+#################################################################
+# Component-scoped SHACL config shapes
+#
+# Translated from each package's own shape. Two systematic
+# rewrites are applied - Reader/Writer collapse to tcs:Channel,
+# and nested class constraints become sh:node references
+# targeted by sh:targetObjectsOf. See catalog/shapes.py for why.
+#################################################################
+
+# Config shape for rdfc:HttpFetch, generated from its upstream
+# SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:HttpFetchShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:HttpFetch ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:options ;
+        sh:name "options" ;
+        sh:node :HttpFetchOptionsShape ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:url ;
+        sh:name "url" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:HttpFetch, reached via
+# rdfc:options. Targeted by sh:targetObjectsOf rather than
+# sh:targetClass because pipeline definitions embed it untyped.
+:HttpFetchOptionsShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:options ;
+    sh:property [
+        sh:path rdfc:HttpFetchAuth ;
+        sh:name "auth" ;
+        sh:node :HttpFetchAuthShape ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:acceptStatusCodes ;
+        sh:name "acceptStatusCodes" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path rdfc:closeOnEnd ;
+        sh:name "closeOnEnd" ;
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:cron ;
+        sh:name "cron" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:errorsAreFatal ;
+        sh:name "errorsAreFatal" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:headers ;
+        sh:name "headers" ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path rdfc:method ;
+        sh:name "method" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:outputAsBuffer ;
+        sh:name "outputAsBuffer" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:outputAsStream ;
+        sh:name "outputAsStream" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:runOnInit ;
+        sh:name "runOnInit" ;
+        sh:datatype xsd:boolean ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:timeOutMilliseconds ;
+        sh:name "timeOutMilliseconds" ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:HttpFetch, reached via
+# rdfc:HttpFetchAuth. Targeted by sh:targetObjectsOf rather than
+# sh:targetClass because pipeline definitions embed it untyped.
+:HttpFetchAuthShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:HttpFetchAuth ;
+    sh:property [
+        sh:path rdfc:type ;
+        sh:name "type" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:HttpOut, generated from its upstream
+# SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:HttpOutShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:HttpOut ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:content_type ;
+        sh:name "content_type" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:endpoint ;
+        sh:name "endpoint" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:reader ;
+        sh:name "reader" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 0 ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:HttpServer, generated from its upstream
+# SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:HttpServerShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:HttpServer ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:options ;
+        sh:name "options" ;
+        sh:node :HttpServerOptionsShape ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:port ;
+        sh:name "port" ;
+        sh:datatype xsd:integer ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:HttpServer, reached via
+# rdfc:options. Targeted by sh:targetObjectsOf rather than
+# sh:targetClass because pipeline definitions embed it untyped.
+:HttpServerOptionsShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:options ;
+    sh:property [
+        sh:path rdfc:host ;
+        sh:name "host" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:method ;
+        sh:name "method" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:path ;
+        sh:name "path" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:streamThresholdBytes ;
+        sh:name "streamThresholdBytes" ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:successStatusCode ;
+        sh:name "successStatusCode" ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:LogProcessorJs, generated from its
+# upstream SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:LogProcessorJsShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:LogProcessorJs ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:label ;
+        sh:name "label" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:level ;
+        sh:name "level" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:raw ;
+        sh:name "raw" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:readAsStream ;
+        sh:name "readAsStream" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:reader ;
+        sh:name "reader" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 0 ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:LogProcessorPy, generated from its
+# upstream SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:LogProcessorPyShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:LogProcessorPy ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:label ;
+        sh:name "label" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:level ;
+        sh:name "level" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:raw ;
+        sh:name "raw" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:reader ;
+        sh:name "reader" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 0 ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:SPARQLIngest, generated from its
+# upstream SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:SPARQLIngestShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:SPARQLIngest ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:ingestConfig ;
+        sh:name "config" ;
+        sh:node :IngestConfigShape ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:memberStream ;
+        sh:name "memberStream" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:sparqlWriter ;
+        sh:name "sparqlWriter" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:SPARQLIngest, reached via
+# rdfc:ingestConfig. Targeted by sh:targetObjectsOf rather than
+# sh:targetClass because pipeline definitions embed it untyped.
+:IngestConfigShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:ingestConfig ;
+    sh:property [
+        sh:path rdfc:accessToken ;
+        sh:name "accessToken" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:changeSemantics ;
+        sh:name "changeSemantics" ;
+        sh:node :ChangeSemanticsShape ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:forVirtuoso ;
+        sh:name "forVirtuoso" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:graphStoreUrl ;
+        sh:name "graphStoreUrl" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:measurePerformance ;
+        sh:name "measurePerformance" ;
+        sh:node :PerformanceConfigShape ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:memberBatchSize ;
+        sh:name "memberBatchSize" ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:memberShape ;
+        sh:name "memberShape" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:operationMode ;
+        sh:name "operationMode" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:targetNamedGraph ;
+        sh:name "targetNamedGraph" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:transactionConfig ;
+        sh:name "transactionConfig" ;
+        sh:node :TransactionConfigShape ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:SPARQLIngest, reached via
+# rdfc:changeSemantics. Targeted by sh:targetObjectsOf rather
+# than sh:targetClass because pipeline definitions embed it
+# untyped.
+:ChangeSemanticsShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:changeSemantics ;
+    sh:property [
+        sh:path rdfc:changeTypePath ;
+        sh:name "changeTypePath" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:createValue ;
+        sh:name "createValue" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:deleteValue ;
+        sh:name "deleteValue" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:updateValue ;
+        sh:name "updateValue" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:SPARQLIngest, reached via
+# rdfc:measurePerformance. Targeted by sh:targetObjectsOf rather
+# than sh:targetClass because pipeline definitions embed it
+# untyped.
+:PerformanceConfigShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:measurePerformance ;
+    sh:property [
+        sh:path rdfc:failureIsFatal ;
+        sh:name "failureIsFatal" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:name ;
+        sh:name "name" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:outputPath ;
+        sh:name "outputPath" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:queryTimeout ;
+        sh:name "queryTimeout" ;
+        sh:datatype xsd:integer ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] .
+
+# Nested config object of rdfc:SPARQLIngest, reached via
+# rdfc:transactionConfig. Targeted by sh:targetObjectsOf rather
+# than sh:targetClass because pipeline definitions embed it
+# untyped.
+:TransactionConfigShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:transactionConfig ;
+    sh:property [
+        sh:path rdfc:transactionEndPath ;
+        sh:name "transactionEndPath" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:transactionIdPath ;
+        sh:name "transactionIdPath" ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:Sdsify, generated from its upstream
+# SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:SdsifyShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:Sdsify ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:input ;
+        sh:name "input" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:metadataConfig ;
+        sh:name "metadataConfig" ;
+        sh:node :MetadataConfigShape ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:metadataOutput ;
+        sh:name "metadataOutput" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:output ;
+        sh:name "output" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:readAsStream ;
+        sh:name "readAsStream" ;
+        sh:datatype xsd:boolean ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:shape ;
+        sh:name "shape" ;
+        sh:datatype xsd:string ;
+        sh:minCount 0 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:typeFilter ;
+        sh:name "types" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:minCount 0
+    ] .
+
+# Nested config object of rdfc:Sdsify, reached via
+# rdfc:metadataConfig. Targeted by sh:targetObjectsOf rather
+# than sh:targetClass because pipeline definitions embed it
+# untyped.
+:MetadataConfigShape
+    a sh:NodeShape ;
+    sh:targetObjectsOf rdfc:metadataConfig ;
+    sh:property [
+        sh:path rdfc:description ;
+        sh:name "description" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:shape ;
+        sh:name "shape" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:shapeIri ;
+        sh:name "shapeIri" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:streamId ;
+        sh:name "streamId" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:timestampPath ;
+        sh:name "timestampPath" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:versionOfPath ;
+        sh:name "versionOfPath" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for rdfc:SkolemizationProcessor, generated from
+# its upstream SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:SkolemizationProcessorShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf rdfc:SkolemizationProcessor ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:incoming ;
+        sh:name "incoming" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:mime ;
+        sh:name "MIME type" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:outgoing ;
+        sh:name "outgoing" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] .
+
+# Config shape for tm:ThresholdMonitorJs, generated from its
+# upstream SHACL shape. Referenced from the component via
+# dcat:qualifiedRelation with role tcs:configShape, and
+# additionally carries a SPARQL target so pySHACL validates the
+# embedded step config directly.
+:ThresholdMonitorJsShape
+    a sh:NodeShape ;
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:prefixes tcs:prefixes ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step prov:specializationOf tm:ThresholdMonitorJs ;
+                      p-plan:hasInputVar/tcs:embedded ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:name "label" ;
+        sh:datatype xsd:string ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:reader ;
+        sh:name "reader" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path tm:creator ;
+        sh:name "creator" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path tm:max ;
+        sh:name "max" ;
+        sh:datatype xsd:double ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path tm:min ;
+        sh:name "min" ;
+        sh:datatype xsd:double ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path tm:path ;
+        sh:name "path" ;
+        sh:node :ShaclPathShape ;
+        tcs:upstreamClass <https://w3id.org/rdf-lens/ontology#PathLens> ;
+        sh:minCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path tm:stream ;
+        sh:name "streamId" ;
+        sh:nodeKind sh:IRI ;
+        tcs:upstreamDatatype xsd:iri ;
+        sh:maxCount 1
+    ] .

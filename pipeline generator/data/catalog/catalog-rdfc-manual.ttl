@@ -1,0 +1,444 @@
+#################################################################
+# Catalog — RDF-Connect, hand-maintained part
+#
+# Everything about RDF-Connect that is NOT derivable from a package's
+# own `processors.ttl`. The derivable part — every published processor,
+# its label, description, landing page, runner dependency, package
+# dependency, `owl:imports` and SHACL config shape — is generated into
+# catalog-rdfc.ttl from catalog-rdfc-requests.ttl. Do not add processors
+# here that could be requested there.
+#
+# Three kinds of entry live in this file:
+#
+#   1. The orchestrator and its two `tcs:Config` literals. The
+#      docker-compose fragment and the Dockerfile are framework-level
+#      deployment decisions with no upstream source.
+#   2. The runners. They are not processors: they carry no config shape,
+#      and `RdfcConfigCompiler` reaches them via `rdf:type rdfc:Runner`
+#      rather than through a request.
+#   3. Components whose source cannot be resolved from a registry or
+#      from this repo — unbuilt stubs, and processors whose code lives
+#      in another repository.
+#   4. Data-shape roles (`tcs:passthroughShape`, `tcs:outputShape`) for
+#      components that are otherwise generated. What a processor does to
+#      the records passing through it is not something upstream
+#      publishes, so it cannot be derived.
+#   5. Value-space shapes for classes from foreign vocabularies.
+#
+# Loaded alongside catalog-core.ttl and catalog-rdfc.ttl.
+#################################################################
+
+
+#################################################################
+# Prefixes
+#################################################################
+
+@prefix : <http://example.org/example/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix proc: <http://dishacled.example.org/processors#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfc: <https://w3id.org/rdf-connect#> .
+@prefix rdfl: <https://w3id.org/rdf-lens/ontology#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix spdx: <http://spdx.org/rdf/terms#> .
+@prefix tcs: <https://w3id.org/toolchain#> .
+
+
+#################################################################
+# 1. Orchestrator
+#################################################################
+
+rdfc:Orchestrator a tcs:PipelineComponent, dcat:Resource ;
+    rdfs:label "RDF Connect Orchestrator" ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "rdfc-proto" ;
+        spdx:versionInfo ">=1.0.0" ;
+        spdx:suppliedBy :pip
+    ] ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/orchestrator-js" ;
+        spdx:versionInfo "^2.2.1" ;
+        spdx:suppliedBy :npm
+    ] ;
+    tcs:config :RdfcOrchestratorDockerCompose ,
+               :RdfcOrchestratorDockerImage .
+
+
+:RdfcOrchestratorDockerCompose
+    a tcs:Config, tcs:DockerComposeConfig ;
+    dct:format "text/yaml" ;
+    tcs:literal """
+  rdfc:
+    image: rdf-connect:latest
+    build: ../../resources/rdfc-docker
+    volumes:
+      - ./rdfc_pipeline.ttl:/workspace/pipeline/pipeline.ttl:ro
+    environment:
+      LOG_LEVEL: debug
+    command: npx rdfc /workspace/pipeline/pipeline.ttl
+""" .
+
+
+# The `FROM python:3.13-slim-trixie` line and the `WORKDIR
+# /workspace/pipeline` below are load-bearing beyond this file: the
+# Python `owl:imports` paths generated into catalog-rdfc.ttl encode both
+# the interpreter version and the working directory's depth. If either
+# changes here, update `PYTHON_VERSION` / `CONTAINER_WORKDIR` in
+# src/rdfc_catalog_harvest/emitter.py and regenerate.
+:RdfcOrchestratorDockerImage
+    a tcs:Config, tcs:DockerImageConfig ;
+    dct:format "text/x-dockerfile" ;
+    tcs:literal """
+# Base: Alpine with Python 3.13
+FROM python:3.13-slim-trixie AS rdfc-base
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    bash \\
+    curl \\
+    wget \\
+    unzip \\
+    git \\
+    openjdk-21-jdk-headless \\
+    nodejs \\
+    npm \\
+    make \\
+    g++ \\
+    libc-dev \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Gradle 8.10.2
+ARG GRADLE_VERSION=8.10.2
+RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp \\
+    && unzip /tmp/gradle-${GRADLE_VERSION}-bin.zip -d /opt \\
+    && ln -s /opt/gradle-${GRADLE_VERSION}/bin/gradle /usr/bin/gradle \\
+    && rm -rf /tmp/*.zip
+
+# Install Python tools Hatch and uv
+RUN pip install --no-cache-dir hatch uv
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy package.json and package-lock.json for npm caching
+COPY package.json ./pipeline/
+
+# Install all processors listed in package.json
+RUN cd pipeline && npm install
+
+# Set default working dir
+WORKDIR /workspace/pipeline
+
+# Keep container interactive
+CMD ["/bin/bash"]
+""" .
+
+
+#################################################################
+# 2. Runners
+#
+# A runner's ``owl:imports`` (e.g. ``@rdfc/js-runner/index.ttl``)
+# IS emitted into the generated pipeline.ttl by
+# RdfcConfigCompiler.describe_pipeline — the orchestrator needs the
+# runner's ``rdfc:CommandRunner`` typing and its ``rdfc:command``
+# instruction to know how to launch it. ``tcs:RdfcProcessorShape``
+# exempts runners from carrying an owl:imports themselves at catalog
+# authoring time (the emitter still copies them out to the pipeline).
+#################################################################
+
+rdfc:NodeRunner a tcs:PipelineComponent, rdfc:Runner, dcat:Resource ;
+    rdfs:label "RDF Connect Javascript Node Runner" ;
+    dct:requires rdfc:Orchestrator ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "@rdfc/js-runner" ;
+        spdx:versionInfo "^3.2.0" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./node_modules/@rdfc/js-runner/index.ttl> .
+
+
+rdfc:PyRunner a tcs:PipelineComponent, rdfc:Runner, dcat:Resource ;
+    rdfs:label "RDF Connect Python Runner" ;
+    dct:requires rdfc:Orchestrator ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "rdfc-runner" ;
+        spdx:versionInfo ">=1.0.0" ;
+        spdx:suppliedBy :pip
+    ] ;
+    owl:imports <../../../usr/local/lib/python3.13/site-packages/rdfc_runner/index.ttl> .
+
+
+#################################################################
+# 3. Components with no resolvable source
+#
+# These carry `rdfc:Processor` by hand, for the same reason the emitter
+# writes it on every generated component: it is what marks an entry as
+# RDF-Connect's, and both `tcs:RdfcStepChannelWiringShape` and the topology
+# rules in `rdfc_inference_rules.yaml` select on it. A processor added
+# here without it is simply not checked.
+#################################################################
+
+# Locally-built processor. Source lives in the demonstrator repo at
+# `demonstrator/RDFC/processors/jsonld-to-nquads/` and is copied into
+# the RDFC container at build time, so there is nothing in this repo or
+# on a registry for the harvester to read. Move this to a
+# `tcs:CatalogRequest` with `tcs:fromPath` once the source is vendored
+# here.
+proc:JsonLdToNQuads a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "JSON-LD to N-Quads processor" ;
+    rdfs:description "Parses incoming JSON-LD strings and serializes them as N-Quads for downstream RDF processors." ;
+    dct:requires rdfc:NodeRunner ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "jsonld-to-nquads" ;
+        spdx:downloadLocation "file:///workspace/pipeline/processors/jsonld-to-nquads" ;
+        spdx:suppliedBy :npm
+    ] ;
+    dct:requires [
+        a spdx:Package ;
+        spdx:name "jsonld" ;
+        spdx:versionInfo "^9.0.0" ;
+        spdx:suppliedBy :npm
+    ] ;
+    owl:imports <./processors/jsonld-to-nquads/processor.ttl> ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:configShape ;
+        dct:relation :JsonLdToNQuadsShape
+    ] ;
+    dcat:qualifiedRelation [
+        a dcat:Relationship ;
+        dcat:hadRole tcs:passthroughShape ;
+        dct:relation [ a sh:NodeShape ]
+    ] .
+
+
+# Written by hand in the same shape the generator emits, because
+# `RdfcConfigCompiler.describe_channel_wiring` reads it: it finds a
+# step's single reader/writer slot by looking for `sh:class tcs:Channel`
+# plus a `tcs:upstreamClass` direction, and injects the channel from
+# `tcs:readsFrom` / `tcs:writesTo` into the step's config. Without this
+# shape `demo:JsonLdToRdf` compiles to an unwired processor. Note the
+# absence of `sh:minCount`: the wiring is the compiler's to supply, so
+# requiring it of the author would fail every pipeline (see rewrite 5 in
+# rdfc_catalog_harvest/shapes.py).
+:JsonLdToNQuadsShape
+    a sh:NodeShape ;
+    # Full IRIs rather than `sh:prefixes tcs:prefixes`, which the
+    # generated shapes use: that registry is declared in
+    # catalog-core.ttl, and this file is parsed on its own by
+    # test_shacl_path_shape.py (":ShaclPathShape as actually declared in
+    # the catalog"). A prefixed target here makes that parse fail with
+    # "Unknown namespace prefix", so the one shape in this file with a
+    # SPARQL target pays a little verbosity to keep the file standalone.
+    sh:target [
+        a sh:SPARQLTarget ;
+        sh:select """
+            SELECT ?this WHERE {
+                ?step <http://www.w3.org/ns/prov#specializationOf>
+                          <http://dishacled.example.org/processors#JsonLdToNQuads> ;
+                      <http://purl.org/net/p-plan#hasInputVar>/<https://w3id.org/toolchain#embedded>
+                          ?this .
+            }
+        """
+    ] ;
+    sh:property [
+        sh:path rdfc:reader ;
+        sh:name "reader" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Reader ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] ;
+    sh:property [
+        sh:path rdfc:writer ;
+        sh:name "writer" ;
+        sh:class tcs:Channel ;
+        tcs:upstreamClass rdfc:Writer ;
+        tcs:upstreamMinCount 1 ;
+        sh:maxCount 1
+    ] .
+
+
+# Unbuilt stub. No implementation exists yet, so there is no package to
+# request and no shape to derive. The `owl:imports` records the path the
+# processor is expected to install to.
+rdfc:HttpIn a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    rdfs:label "RDF Connect Http In" ;
+    dct:requires rdfc:PyRunner ;
+    owl:imports <../../../usr/local/lib/python3.13/site-packages/rdfc_http_in/processor.ttl> .
+
+
+# Unbuilt stub, superseded in practice by `tm:ThresholdMonitorJs` (which
+# is generated from `@rdfc/threshold-monitor-processor-ts`). Retained
+# only because it is still referenced from the catalog; drop it once
+# nothing points at it.
+rdfc:thresholdMonitoringProcessor a tcs:PipelineComponent, dcat:Resource, rdfc:Processor ;
+    dct:requires rdfc:NodeRunner ;
+    owl:imports <../../../usr/local/lib/python3.13/site-packages/rdfc_threshold_monitoring/processor.ttl> .
+
+
+#################################################################
+# 4. Data-shape roles for generated components
+#
+# `dcat:qualifiedRelation` entries whose `dcat:hadRole` is about the
+# *data* a component moves — `tcs:passthroughShape`, `tcs:outputShape` —
+# rather than its configuration. The emitter only ever writes
+# `tcs:configShape`, because a config shape is derivable from the
+# package's own `processors.ttl` and these are not: whether a processor
+# passes its input through unchanged is a fact about what its code does
+# to records, which upstream does not publish anywhere.
+#
+# They attach to generated components all the same. RDF is additive, so
+# a statement about `rdfc:Sdsify` made here merges with the generated
+# block in catalog-rdfc.ttl; the two files describe the same subject
+# from the two different sources that know about it. Keep them here
+# rather than in the generated file — `generate` would overwrite them.
+#
+# `PipelineAssembler.normalize_passthrough_shapes` reads these to carry
+# a shape along a chain of passthrough steps, so a missing entry does
+# not fail loudly: the chain just stops propagating and the downstream
+# step ends up with no `tcs:inputShape`.
+#################################################################
+
+rdfc:HttpServer dcat:qualifiedRelation [
+    a dcat:Relationship ;
+    dcat:hadRole tcs:passthroughShape ;
+    dct:relation [ a sh:NodeShape ]
+] .
+
+# Boundary tagging for HTTP-facing processors. Not derivable from
+# their upstream processor.ttl (which only knows about channel wiring,
+# not container topology), so declared here rather than in the
+# generated catalog. Lets BridgeTransportCompiler recognise the
+# container-crossing side that ldio:HttpIn / ldio:HttpOut already have
+# tagged, and satisfies CatalogMissingBridgeShape / bridge_transport
+# on cross-container channels between LDIO and RDF-Connect.
+rdfc:HttpServer a tcs:EntryBoundaryComponent ;
+    tcs:channelType tcs:HttpChannel .
+
+rdfc:HttpOut a tcs:ExitBoundaryComponent ;
+    tcs:channelType tcs:HttpChannel .
+
+
+rdfc:SkolemizationProcessor dcat:qualifiedRelation [
+    a dcat:Relationship ;
+    dcat:hadRole tcs:passthroughShape ;
+    dct:relation [ a sh:NodeShape ]
+] .
+
+
+# Not a passthrough: Sdsify wraps each record into an SDS member, so
+# what comes out is not what went in. The empty shape says "this
+# produces something whose shape the toolchain does not describe",
+# which is what stops a chain rather than propagating a wrong shape.
+rdfc:Sdsify dcat:qualifiedRelation [
+    a dcat:Relationship ;
+    dcat:hadRole tcs:outputShape ;
+    dct:relation [ a sh:NodeShape ]
+] .
+
+
+#################################################################
+# 5. Value-space shapes for external vocabularies
+#
+# Shapes for classes referenced by upstream processor shapes that come
+# from vocabularies outside RDF-Connect. The emitter keeps a registry
+# (`EXTERNAL_SHAPES` in src/rdfc_catalog_harvest/shapes.py) mapping such a class to a
+# shape declared here; a generated `sh:class rdfl:PathLens` then becomes
+# `sh:node :ShaclPathShape` instead of being demoted to a
+# non-constraining annotation.
+#
+# Add a class here when its value space is checkable in SHACL. Anything
+# left unmapped still degrades safely to `tcs:upstreamClass`.
+#################################################################
+
+# `rdfl:PathLens` is a SHACL property path. rdf-lens interprets it at
+# *execution* time to walk from an SDS member to the value a processor
+# needs (e.g. tm:path on the threshold monitor), so a malformed path is
+# not a validation nicety — it is a runtime extraction failure.
+#
+# `sh:class rdfl:PathLens` cannot express that: a path is a bare IRI or a
+# structure, never an rdf:type'd instance. This shape describes the value
+# space instead, following the grammar rdf-lens actually implements in
+# `ShaclPath` (src/shacl.ts):
+#
+#   predicate path    a bare IRI
+#   sequence path     an RDF list of paths
+#   sh:alternativePath   an RDF list of paths
+#   sh:inversePath       a path
+#   sh:zeroOrMorePath    a path
+#   sh:zeroOrOnePath     a path
+#
+# `sh:oneOrMorePath` is deliberately NOT accepted. SHACL defines it, but
+# rdf-lens does not implement it: `ShaclPath` lists
+# `MultiPath(SHACL.zeroOrMorePath, 1)` where `sh:oneOrMorePath` was
+# clearly meant, so the term appears nowhere in the library and a config
+# using it falls through to the predicate-path branch and fails at
+# runtime. Validation here matches execution rather than the spec; add a
+# branch below once rdf-lens handles it.
+#
+# The shape is recursive (a path can nest paths). SHACL leaves recursion
+# support optional and pySHACL emits ShapeRecursionWarning for it, which
+# is why nesting is validated one level per step rather than by
+# flattening the whole expression.
+:ShaclPathShape a sh:NodeShape ;
+    rdfs:label "SHACL property path" ;
+    rdfs:comment "Value space of rdfl:PathLens: the subset of SHACL property paths that rdf-lens can interpret." ;
+    sh:or (
+        [ sh:nodeKind sh:IRI ]
+        [ sh:nodeKind sh:BlankNode ;
+          sh:property [ sh:path rdf:first ; sh:minCount 1 ; sh:maxCount 1 ;
+                        sh:node :ShaclPathShape ] ]
+        [ sh:nodeKind sh:BlankNode ;
+          sh:property [ sh:path sh:alternativePath ; sh:minCount 1 ; sh:maxCount 1 ;
+                        sh:node :ShaclPathListShape ] ]
+        [ sh:nodeKind sh:BlankNode ;
+          sh:property [ sh:path sh:inversePath ; sh:minCount 1 ; sh:maxCount 1 ;
+                        sh:node :ShaclPathShape ] ]
+        [ sh:nodeKind sh:BlankNode ;
+          sh:property [ sh:path sh:zeroOrMorePath ; sh:minCount 1 ; sh:maxCount 1 ;
+                        sh:node :ShaclPathShape ] ]
+        [ sh:nodeKind sh:BlankNode ;
+          sh:property [ sh:path sh:zeroOrOnePath ; sh:minCount 1 ; sh:maxCount 1 ;
+                        sh:node :ShaclPathShape ] ]
+    ) .
+
+
+# An RDF list whose members are paths. Used by sh:alternativePath, which
+# requires a list rather than accepting a single path.
+:ShaclPathListShape a sh:NodeShape ;
+    rdfs:label "RDF list of SHACL property paths" ;
+    sh:property [ sh:path rdf:first ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:node :ShaclPathShape ] ;
+    sh:property [ sh:path rdf:rest ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+
+#################################################################
+# Catalog membership
+#
+# Only the components defined in *this* file. The generated
+# catalog-rdfc.ttl contributes its own `dcat:resource` entries to the
+# same catalog node — RDF is additive, so the two lists merge on load.
+# Keeping each list next to the definitions it refers to is what stops
+# the drift that a single central list accumulated: two entries
+# (`rdfc:HttpFetch`, `rdfc:LogProcessorPy`) had outlived their
+# definitions and were failing `tcs:CatalogShape`.
+#################################################################
+
+:DishacledCatalog
+  a tcs:Catalog, dcat:Catalog ;
+  dcat:resource
+    rdfc:Orchestrator,
+    rdfc:NodeRunner,
+    rdfc:PyRunner,
+    rdfc:HttpIn,
+    rdfc:thresholdMonitoringProcessor,
+    proc:JsonLdToNQuads .

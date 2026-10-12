@@ -1,0 +1,5 @@
+# All third-party dependencies are declared by the rdfine package
+# (see src/rdfine/pyproject.toml). Installing rdfine in editable mode
+# therefore covers both rdfine itself and the compilers package.
+-e ./src/rdfine
+
